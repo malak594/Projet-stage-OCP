@@ -1,1 +1,1222 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>OCP El Jadida — Prédiction Pannes Pompe H₂SO₄</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Dialog', 'Segoe UI', Arial, sans-serif;
+    font-size: 12px;
+    background: #d4d0c8;
+    color: #000;
+    user-select: none;
+  }
+ 
+  /* ── Menu Bar ── */
+  .menubar {
+    background: #d4d0c8;
+    border-bottom: 1px solid #808080;
+    padding: 1px 4px;
+    display: flex;
+    gap: 0;
+  }
+  .menubar span {
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .menubar span:hover { background: #0a246a; color: #fff; }
+ 
+  /* ── Swing Panel style ── */
+  .swing-panel {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    padding: 8px;
+    margin: 4px;
+  }
+  .swing-panel-inset {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    padding: 8px;
+  }
+  .titled-border {
+    border: 1px solid #808080;
+    padding: 6px 8px 8px;
+    margin: 4px 2px;
+    position: relative;
+  }
+  .titled-border legend {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 0 4px;
+    color: #000;
+  }
+ 
+  /* ── Swing Buttons ── */
+  .jbutton {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    padding: 3px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 80px;
+    color: #000;
+  }
+  .jbutton:hover { background: #c8c4bc; }
+  .jbutton:active { border-color: #808080 #fff #fff #808080; padding: 4px 11px 2px 13px; }
+  .jbutton:disabled { color: #808080; cursor: default; }
+ 
+  /* ── Swing TextField / Label ── */
+  .jtextfield {
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    padding: 2px 4px;
+    font-size: 11px;
+    font-family: inherit;
+    color: #000;
+    width: 100%;
+  }
+  .jtextfield:focus { outline: none; }
+  .jlabel { font-size: 11px; color: #000; }
+  .jlabel-bold { font-size: 11px; font-weight: bold; color: #000; }
+ 
+  /* ── Swing Table / TextArea ── */
+  .jtable-scroll {
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    overflow-y: auto;
+  }
+  .jtable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .jtable thead tr { background: #d4d0c8; border-bottom: 1px solid #808080; }
+  .jtable thead th {
+    padding: 2px 6px;
+    text-align: left;
+    font-weight: bold;
+    border-right: 1px solid #808080;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .jtable tbody tr { cursor: pointer; }
+  .jtable tbody tr:hover { background: #316ac5; color: #fff; }
+  .jtable tbody tr.selected { background: #316ac5; color: #fff; }
+  .jtable tbody td {
+    padding: 1px 6px;
+    border-bottom: 1px solid #e8e8e8;
+    border-right: 1px solid #e4e4e4;
+    white-space: nowrap;
+  }
+ 
+  /* ── Status Bar ── */
+  .statusbar {
+    background: #d4d0c8;
+    border-top: 1px solid #808080;
+    padding: 2px 6px;
+    font-size: 10px;
+    display: flex;
+    gap: 8px;
+  }
+  .status-cell {
+    border: 1px solid #808080;
+    padding: 1px 6px;
+    font-size: 10px;
+  }
+ 
+  /* ── Risk Badges ── */
+  .badge-faible { background: #00aa00; color: #fff; padding: 1px 6px; font-size: 10px; font-weight: bold; }
+  .badge-moyen  { background: #ff8800; color: #fff; padding: 1px 6px; font-size: 10px; font-weight: bold; }
+  .badge-critique { background: #cc0000; color: #fff; padding: 1px 6px; font-size: 10px; font-weight: bold; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0.4; } }
+ 
+  /* ── Progress Bar ── */
+  .jprogress-outer {
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    height: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .jprogress-inner {
+    height: 100%;
+    background: linear-gradient(to bottom, #316ac5 0%, #2255a4 50%, #316ac5 100%);
+    transition: width 0.3s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .jprogress-text {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: bold; color: #000;
+  }
+ 
+  /* ── Gauge (Swing JProgressBar vertical-ish) ── */
+  .gauge-box {
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    padding: 4px;
+    text-align: center;
+  }
+  .gauge-label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
+  .gauge-bar-outer {
+    background: #e0e0e0;
+    border: 1px solid #808080;
+    height: 80px;
+    width: 28px;
+    margin: 0 auto 2px;
+    position: relative;
+    display: flex; align-items: flex-end;
+  }
+  .gauge-bar-inner { width: 100%; transition: height 0.5s, background 0.5s; }
+  .gauge-val { font-size: 10px; font-weight: bold; }
+ 
+  /* ── Tab Panel ── */
+  .jtabs { display: flex; border-bottom: 2px solid #808080; gap: 0; margin-top: 4px; }
+  .jtab {
+    padding: 3px 12px;
+    font-size: 11px;
+    background: #bdb8b0;
+    border: 2px solid;
+    border-color: #fff #808080 transparent #fff;
+    cursor: pointer;
+    margin-right: 2px;
+    position: relative;
+    top: 2px;
+  }
+  .jtab.active {
+    background: #d4d0c8;
+    border-bottom-color: #d4d0c8;
+    font-weight: bold;
+    top: 2px;
+    z-index: 1;
+  }
+  .jtab-content { display: none; }
+  .jtab-content.active { display: block; }
+ 
+  /* ── Separator ── */
+  .jsep-h { border: none; border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 4px 0; }
+ 
+  /* ── Layout helpers ── */
+  .row { display: flex; gap: 4px; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 4px; }
+  .main-layout { display: flex; gap: 0; flex: 1; overflow: hidden; }
+  .left-panel  { width: 320px; min-width: 320px; display: flex; flex-direction: column; }
+  .right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .chart-area  { background: #fff; border: 2px solid; border-color: #808080 #fff #fff #808080; flex: 1; position: relative; }
+ 
+  /* ── Alert popup ── */
+  .jalert-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 999;
+    align-items: center; justify-content: center;
+  }
+  .jalert-overlay.show { display: flex; }
+  .jalert-box {
+    background: #d4d0c8;
+    border: 3px solid #cc0000;
+    min-width: 420px;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .jalert-title {
+    background: linear-gradient(to bottom, #cc0000 0%, #880000 100%);
+    color: #fff; padding: 3px 8px;
+    font-weight: bold; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .jalert-body { padding: 12px; }
+  .jalert-icon { font-size: 28px; float: left; margin-right: 10px; }
+ 
+  /* ── Sensor Cards (Tab 1) ── */
+  .scard {
+    background: #f0ece4;
+    border: 1px solid #b8b4ac;
+    border-left: 4px solid #00aa00;
+    border-radius: 3px;
+    padding: 9px 12px 8px;
+    transition: border-left-color 0.4s, background 0.4s;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+  .scard.warn  { border-left-color: #ff8800; background: #fff8ee; }
+  .scard.crit  { border-left-color: #cc0000; background: #fff2f2; }
+  .scard.idle  { border-left-color: #aaaaaa; }
+  .scard-header { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .scard-dot {
+    width:9px; height:9px; border-radius:50%;
+    background:#00aa00; flex-shrink:0;
+    box-shadow: 0 0 0 2px rgba(0,170,0,0.2);
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+  .scard-dot.warn { background:#ff8800; box-shadow:0 0 0 2px rgba(255,136,0,0.2); }
+  .scard-dot.crit { background:#cc0000; box-shadow:0 0 0 2px rgba(204,0,0,0.25); animation:blink 1s step-end infinite; }
+  .scard-dot.idle { background:#aaaaaa; box-shadow:none; }
+  .scard-name { font-size:11px; font-weight:600; color:#444; letter-spacing:0.3px; }
+  .scard-val  { font-size:22px; font-weight:700; color:#222; line-height:1.1; margin-bottom:3px; }
+  .scard-unit { font-size:12px; font-weight:400; color:#666; margin-left:3px; }
+  .scard-limits { font-size:10px; color:#999; }
+ 
+  /* Scrollbar Swing-ish */
+  ::-webkit-scrollbar { width: 14px; }
+  ::-webkit-scrollbar-track { background: #d4d0c8; border: 1px solid #808080; }
+  ::-webkit-scrollbar-thumb { background: #b0aca4; border: 1px solid #808080; }
+  ::-webkit-scrollbar-button { background: #d4d0c8; border: 1px solid #808080; height: 14px; }
+ 
+  /* ── Email Config Popup ── */
+  .jemail-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 998;
+    align-items: center; justify-content: center;
+  }
+  .jemail-overlay.show { display: flex; }
+  .jemail-box {
+    background: #d4d0c8; border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    min-width: 380px; box-shadow: 4px 4px 0 #000;
+  }
+  .jemail-title {
+    background: linear-gradient(to bottom, #000080 0%, #1084d0 100%);
+    color: #fff; padding: 3px 8px;
+    font-weight: bold; font-size: 11px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .jemail-body { padding: 14px; }
+  .email-status-ok   { color: #006600; font-weight: bold; font-size: 11px; }
+  .email-status-err  { color: #cc0000; font-weight: bold; font-size: 11px; }
+  .email-status-send { color: #0000aa; font-weight: bold; font-size: 11px; }
+ 
+</style>
+</head>
+<body>
+ 
+<!-- ── Critical Alert Popup ── -->
+<div class="jalert-overlay" id="alertOverlay">
+  <div class="jalert-box">
+    <div class="jalert-title">
+      <span>⚠ ALERTE CRITIQUE — Pompe H₂SO₄ OCP El Jadida</span>
+      <span style="cursor:pointer" onclick="closeAlert()">✕</span>
+    </div>
+    <div class="jalert-body">
+      <div class="row" style="margin-bottom:10px;">
+        <span class="jalert-icon">🚨</span>
+        <div>
+          <div class="jlabel-bold" style="font-size:13px; color:#cc0000;">RISQUE CRITIQUE DÉTECTÉ</div>
+          <div class="jlabel" id="alertTime" style="color:#666; font-size:10px;"></div>
+        </div>
+      </div>
+      <div id="alertBody" style="font-size:11px; line-height:1.7; margin-bottom:10px;"></div>
+      <hr class="jsep-h">
+      <div class="row" style="justify-content:center; margin-top:8px;">
+        <button class="jbutton" onclick="closeAlert()" style="background:#cc0000;color:#fff;border-color:#aa0000 #550000 #550000 #aa0000;">Acquitter</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ── Email Config Popup ── -->
+<div class="jemail-overlay" id="emailOverlay">
+  <div class="jemail-box">
+    <div class="jemail-title">
+      <span>📧 Configuration Alertes Email</span>
+      <span style="cursor:pointer" onclick="closeEmailConfig()">✕</span>
+    </div>
+    <div class="jemail-body">
+      <div class="col" style="gap:8px;">
+        <div class="jlabel" style="font-size:10px; color:#444; margin-bottom:2px;">
+          Utilise un <b>mot de passe d'application Gmail</b><br>
+          (Compte Google → Sécurité → Mots de passe des applications)
+        </div>
+        <div class="row" style="gap:6px; align-items:center;">
+          <div class="jlabel-bold" style="width:130px;">Email expéditeur</div>
+          <input class="jtextfield" id="cfg_from" type="email" placeholder="ton.email@gmail.com" style="flex:1;">
+        </div>
+        <div class="row" style="gap:6px; align-items:center;">
+          <div class="jlabel-bold" style="width:130px;">Mot de passe app</div>
+          <input class="jtextfield" id="cfg_pass" type="password" placeholder="xxxx xxxx xxxx xxxx" style="flex:1;">
+        </div>
+        <div class="row" style="gap:6px; align-items:center;">
+          <div class="jlabel-bold" style="width:130px;">Email destinataire</div>
+          <input class="jtextfield" id="cfg_to" type="email" placeholder="technicien@ocp.ma" style="flex:1;">
+        </div>
+        <hr class="jsep-h">
+        <div class="row" style="gap:6px; justify-content:center;">
+          <button class="jbutton" onclick="testEmail()">📤 Tester l'envoi</button>
+          <button class="jbutton" onclick="saveEmailConfig()" style="background:#d4d0c8;">💾 Enregistrer</button>
+          <button class="jbutton" onclick="closeEmailConfig()">Annuler</button>
+        </div>
+        <div id="emailTestResult" style="text-align:center; font-size:11px; min-height:16px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ── Main JFrame ── -->
+<div class="jframe">
+ 
+  <!-- Toolbar -->
+  <div class="swing-panel" style="padding:4px 6px; display:flex; align-items:center; gap:6px; margin:2px 4px 0;">
+    <button class="jbutton" onclick="trainModel()" id="btnTrain">▶ Entraîner Modèle</button>
+    <button class="jbutton" onclick="startRealtime()" id="btnStart" disabled>▶ Démarrer Surveillance</button>
+    <button class="jbutton" onclick="stopRealtime()" id="btnStop" disabled>⏹ Arrêter</button>
+    <button class="jbutton" onclick="runTest()" id="btnTest" disabled>🧪 Tester (Exemples)</button>
+    <button class="jbutton" onclick="openEmailConfig()" id="btnEmail" style="margin-left:8px;">📧 Config Email</button>
+    <span id="emailStatusBar" style="font-size:10px; color:#808080; margin-left:4px;">Email: non configuré</span>
+  </div>
+ 
+  <!-- Main Content -->
+  <div class="main-layout" style="flex:1; overflow:hidden; padding:4px;">
+ 
+    <!-- LEFT PANEL -->
+    <div class="left-panel" style="display:none;">
+    </div>
+ 
+    <!-- RIGHT PANEL -->
+    <div class="right-panel" style="flex:1; min-width:0; width:100%">
+ 
+      <!-- Tabs -->
+      <div class="jtabs">
+        <div class="jtab active" id="tab1" onclick="showTab(1)">📊 Surveillance Temps Réel</div>
+        <div class="jtab" id="tab2" onclick="showTab(2)">🧪 Résultats Tests</div>
+      </div>
+ 
+      <!-- Tab 1: Real-time Sensor Dashboard -->
+      <div class="jtab-content active" id="tabContent1" style="height:calc(100% - 28px); overflow-y:auto; background:#c8c4bc;">
+        <div style="padding:12px 14px; display:flex; flex-direction:column; gap:12px;">
+ 
+          <!-- Risk Banner -->
+          <div id="riskBanner" style="
+            display:flex; align-items:center; justify-content:space-between;
+            background:#e8e4dc; border:1px solid #b0aca4;
+            border-left:5px solid #808080;
+            border-radius:3px; padding:10px 16px;
+            box-shadow:1px 1px 3px rgba(0,0,0,0.15);
+          ">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="riskDot" style="width:14px;height:14px;border-radius:50%;background:#808080;box-shadow:0 0 0 3px rgba(128,128,128,0.25);flex-shrink:0;"></div>
+              <div>
+                <div style="font-size:10px;color:#666;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;">Niveau de risque actuel</div>
+                <div id="riskDisplay" style="font-size:20px;font-weight:700;color:#808080;letter-spacing:1px;line-height:1.2;">EN ATTENTE</div>
+                <div id="riskDesc" style="font-size:10px;color:#888;margin-top:2px;">Démarrer la surveillance pour obtenir une prédiction</div>
+              </div>
+            </div>
+            <div id="riskProba" style="display:none;flex-direction:column;gap:4px;min-width:160px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;">
+                <span style="width:52px;text-align:right;color:#006600;font-weight:600;">FAIBLE</span>
+                <div style="flex:1;height:7px;background:#ddd;border-radius:4px;overflow:hidden;border:1px solid #bbb;">
+                  <div id="probaF" style="height:100%;background:#00aa00;width:0%;transition:width 0.4s;border-radius:4px;"></div>
+                </div>
+                <span id="probaFv" style="width:28px;color:#555;">0%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;">
+                <span style="width:52px;text-align:right;color:#cc6600;font-weight:600;">MOYEN</span>
+                <div style="flex:1;height:7px;background:#ddd;border-radius:4px;overflow:hidden;border:1px solid #bbb;">
+                  <div id="probaM" style="height:100%;background:#ff8800;width:0%;transition:width 0.4s;border-radius:4px;"></div>
+                </div>
+                <span id="probaMv" style="width:28px;color:#555;">0%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;">
+                <span style="width:52px;text-align:right;color:#cc0000;font-weight:600;">CRITIQUE</span>
+                <div style="flex:1;height:7px;background:#ddd;border-radius:4px;overflow:hidden;border:1px solid #bbb;">
+                  <div id="probaC" style="height:100%;background:#cc0000;width:0%;transition:width 0.4s;border-radius:4px;"></div>
+                </div>
+                <span id="probaCv" style="width:28px;color:#555;">0%</span>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- Températures -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;padding-left:2px;">🌡 Températures</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div class="scard" id="card_ti171">
+                <div class="scard-header"><span class="scard-dot" id="dot_ti171"></span><span class="scard-name">TI-171</span></div>
+                <div class="scard-val"><span id="v_ti171">—</span><span class="scard-unit">°C</span></div>
+                <div class="scard-limits">H=72 / HH=73</div>
+              </div>
+              <div class="scard" id="card_ti170">
+                <div class="scard-header"><span class="scard-dot" id="dot_ti170"></span><span class="scard-name">TI-170</span></div>
+                <div class="scard-val"><span id="v_ti170">—</span><span class="scard-unit">°C</span></div>
+                <div class="scard-limits">H=77 / HH=78</div>
+              </div>
+              <div class="scard" id="card_ti169">
+                <div class="scard-header"><span class="scard-dot" id="dot_ti169"></span><span class="scard-name">TI-169</span></div>
+                <div class="scard-val"><span id="v_ti169">—</span><span class="scard-unit">°C</span></div>
+                <div class="scard-limits">H=78 / HH=79</div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- Vibrations & Azimut -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;padding-left:2px;">〰 Vibrations &amp; Position angulaire</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div class="scard" id="card_vi167x">
+                <div class="scard-header"><span class="scard-dot" id="dot_vi167x"></span><span class="scard-name">VI-167X</span></div>
+                <div class="scard-val"><span id="v_vi167x">—</span><span class="scard-unit">mm/s</span></div>
+                <div class="scard-limits">H=15 / HH=20</div>
+              </div>
+              <div class="scard" id="card_vi167y">
+                <div class="scard-header"><span class="scard-dot" id="dot_vi167y"></span><span class="scard-name">VI-167Y</span></div>
+                <div class="scard-val"><span id="v_vi167y">—</span><span class="scard-unit">mm/s</span></div>
+                <div class="scard-limits">H=16 / HH=20</div>
+              </div>
+              <div class="scard" id="card_azi165">
+                <div class="scard-header"><span class="scard-dot" id="dot_azi165"></span><span class="scard-name">AZI-165Z</span></div>
+                <div class="scard-val"><span id="v_azi165">—</span><span class="scard-unit">rad</span></div>
+                <div class="scard-limits">H=0.1 / HH=0.3</div>
+              </div>
+            </div>
+          </div>
+ 
+          <!-- Historique Alertes Critiques -->
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;padding-left:2px;">🔴 Historique Alertes Critiques</div>
+            <div class="jtable-scroll" style="max-height:150px;">
+              <table class="jtable">
+                <thead><tr>
+                  <th>Horodatage</th><th>Niveau</th><th>TI171</th><th>TI170</th><th>TI169</th><th>VI167X</th><th>VI167Y</th><th>AZI165</th>
+                </tr></thead>
+                <tbody id="alertHistBody">
+                  <tr><td colspan="8" style="text-align:center;color:#808080;padding:8px;">Aucune alerte enregistrée</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+ 
+        </div>
+      </div>
+ 
+      <!-- Tab 2: Test Results -->
+      <div class="jtab-content" id="tabContent2" style="overflow:hidden; height:calc(100% - 28px);">
+        <div style="padding:6px; display:flex; flex-direction:column; gap:4px; height:100%;">
+          <div class="row" style="gap:8px; flex-wrap:wrap;">
+            <button class="jbutton" onclick="loadExample(0)">Exemple : FAIBLE ✅</button>
+            <button class="jbutton" onclick="loadExample(1)">Exemple : MOYEN ⚠</button>
+            <button class="jbutton" onclick="loadExample(2)">Exemple : CRITIQUE 🔴</button>
+            <div style="margin-left:auto; font-size:10px; color:#666;">Charger un exemple puis cliquer sur Prédire</div>
+          </div>
+          <div class="swing-panel-inset" style="padding:8px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+              <div class="col">
+                <div class="jlabel-bold">TI-171 (Temp. °C)</div>
+                <input class="jtextfield" id="inp_ti171" type="number" step="0.1" value="70.0">
+                <div style="font-size:9px;color:#666;">Normal: 68–72°C</div>
+              </div>
+              <div class="col">
+                <div class="jlabel-bold">TI-170 (Temp. °C)</div>
+                <input class="jtextfield" id="inp_ti170" type="number" step="0.1" value="76.0">
+                <div style="font-size:9px;color:#666;">Normal: 72–77°C</div>
+              </div>
+              <div class="col">
+                <div class="jlabel-bold">TI-169 (Temp. °C)</div>
+                <input class="jtextfield" id="inp_ti169" type="number" step="0.1" value="76.0">
+                <div style="font-size:9px;color:#666;">Normal: 72–78°C</div>
+              </div>
+              <div class="col">
+                <div class="jlabel-bold">VI-167X (mm/s)</div>
+                <input class="jtextfield" id="inp_vi167x" type="number" step="0.01" value="12.0">
+                <div style="font-size:9px;color:#666;">Normal: 10–16 mm/s</div>
+              </div>
+              <div class="col">
+                <div class="jlabel-bold">VI-167Y (mm/s)</div>
+                <input class="jtextfield" id="inp_vi167y" type="number" step="0.01" value="14.0">
+                <div style="font-size:9px;color:#666;">Normal: 12–18 mm/s</div>
+              </div>
+              <div class="col">
+                <div class="jlabel-bold">AZI-165 (Azimut)</div>
+                <input class="jtextfield" id="inp_azi165" type="number" step="0.001" value="-0.31">
+                <div style="font-size:9px;color:#666;">Normal: -0.36 à -0.29</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:8px; gap:8px;">
+              <button class="jbutton" id="btnPredict" onclick="predictManual()" disabled style="background:#d4d0c8;">🔍 Prédire</button>
+              <div id="predResult" style="font-size:13px; font-weight:bold; padding:3px 12px; border:2px solid #808080; background:#fff; min-width:200px; text-align:center; color:#808080;">
+                — Résultat —
+              </div>
+              <span id="predTime" style="font-size:10px; color:#666;"></span>
+            </div>
+          </div>
+          <!-- Test results table -->
+          <div class="jtable-scroll" style="flex:1; height:200px;">
+            <table class="jtable">
+              <thead><tr>
+                <th>#</th><th>TI171</th><th>TI170</th><th>TI169</th><th>VI167X</th><th>VI167Y</th><th>AZI165</th><th>Prédit</th><th>Réel</th><th>✓/✗</th>
+              </tr></thead>
+              <tbody id="testTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+ 
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <span class="status-cell" id="statusMain">Prêt — Entraîner le modèle pour commencer</span>
+    <span class="status-cell" id="statusTime"></span>
+    <span class="status-cell" id="statusAlerts">Alertes : 0</span>
+    <span class="status-cell" style="margin-left:auto;">OCP El Jadida | H₂SO₄ | IA 2ème Année</span>
+  </div>
+ 
+</div>
+ 
+<script>
+// ──────────────────────────────────────────────
+//  DATA — Real OCP sensor data (150 samples)
+// ──────────────────────────────────────────────
+const TRAINING_DATA = [{"date":"2026-02-01 03:06","TI171":68,"TI170":73,"TI169":74,"VI167X":14.36,"VI167Y":15.011,"AZI165":-0.21,"risk":0},{"date":"2026-02-02 06:11","TI171":68,"TI170":73,"TI169":74,"VI167X":13.092,"VI167Y":14.187,"AZI165":-0.21,"risk":0},{"date":"2026-02-02 18:26","TI171":71,"TI170":71,"TI169":72,"VI167X":13,"VI167Y":16.916,"AZI165":-0.15,"risk":0},{"date":"2026-02-04 19:13","TI171":70,"TI170":75,"TI169":76,"VI167X":13,"VI167Y":15,"AZI165":-0.28,"risk":0},{"date":"2026-02-05 03:53","TI171":69,"TI170":76,"TI169":76,"VI167X":13,"VI167Y":14.39,"AZI165":-0.28,"risk":0},{"date":"2026-02-05 04:16","TI171":69,"TI170":75.71,"TI169":76,"VI167X":13,"VI167Y":14.414,"AZI165":-0.28,"risk":0},{"date":"2026-02-05 18:12","TI171":69,"TI170":76,"TI169":76,"VI167X":12.894,"VI167Y":14.949,"AZI165":-0.289,"risk":0},{"date":"2026-02-06 05:33","TI171":69,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.676,"AZI165":-0.282,"risk":0},{"date":"2026-02-06 06:34","TI171":69,"TI170":76,"TI169":76,"VI167X":12.076,"VI167Y":14.999,"AZI165":-0.29,"risk":0},{"date":"2026-02-06 18:28","TI171":71,"TI170":77,"TI169":78,"VI167X":12.03,"VI167Y":14.611,"AZI165":-0.3,"risk":0},{"date":"2026-02-07 22:09","TI171":70,"TI170":76,"TI169":76,"VI167X":12.066,"VI167Y":14.655,"AZI165":-0.308,"risk":0},{"date":"2026-02-08 22:57","TI171":70,"TI170":76,"TI169":76.94,"VI167X":12.014,"VI167Y":14.144,"AZI165":-0.31,"risk":0},{"date":"2026-02-09 17:44","TI171":70,"TI170":76,"TI169":77,"VI167X":12.111,"VI167Y":14.226,"AZI165":-0.31,"risk":0},{"date":"2026-02-09 19:15","TI171":70.05,"TI170":76,"TI169":77,"VI167X":12.045,"VI167Y":14.012,"AZI165":-0.31,"risk":0},{"date":"2026-02-10 03:50","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.074,"AZI165":-0.31,"risk":0},{"date":"2026-02-10 04:56","TI171":70,"TI170":76,"TI169":77,"VI167X":12.002,"VI167Y":14.586,"AZI165":-0.31,"risk":0},{"date":"2026-02-10 05:59","TI171":70,"TI170":76,"TI169":77,"VI167X":12.363,"VI167Y":14.79,"AZI165":-0.31,"risk":0},{"date":"2026-02-10 16:15","TI171":70.5,"TI170":76,"TI169":77,"VI167X":12.385,"VI167Y":14.015,"AZI165":-0.31,"risk":0},{"date":"2026-02-12 00:14","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.094,"AZI165":-0.31,"risk":0},{"date":"2026-02-12 06:47","TI171":70,"TI170":76,"TI169":77,"VI167X":12.008,"VI167Y":14.534,"AZI165":-0.31,"risk":0},{"date":"2026-02-12 08:14","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.011,"AZI165":-0.31,"risk":0},{"date":"2026-02-12 11:24","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.436,"AZI165":-0.31,"risk":0},{"date":"2026-02-12 13:53","TI171":71,"TI170":76,"TI169":77,"VI167X":12.16,"VI167Y":14.674,"AZI165":-0.31,"risk":0},{"date":"2026-02-13 04:53","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.435,"AZI165":-0.31,"risk":0},{"date":"2026-02-13 11:26","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.085,"AZI165":-0.31,"risk":0},{"date":"2026-02-13 12:18","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.835,"AZI165":-0.31,"risk":0},{"date":"2026-02-14 07:17","TI171":70.28,"TI170":76,"TI169":76.04,"VI167X":12,"VI167Y":14.904,"AZI165":-0.31,"risk":0},{"date":"2026-02-14 15:01","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.793,"AZI165":-0.31,"risk":0},{"date":"2026-02-14 23:25","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.011,"AZI165":-0.31,"risk":0},{"date":"2026-02-15 04:32","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.038,"AZI165":-0.31,"risk":0},{"date":"2026-02-16 05:41","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.013,"AZI165":-0.31,"risk":0},{"date":"2026-02-16 14:56","TI171":70,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.253,"AZI165":-0.31,"risk":0},{"date":"2026-02-16 15:53","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.812,"AZI165":-0.31,"risk":0},{"date":"2026-02-16 16:58","TI171":70,"TI170":76,"TI169":76,"VI167X":12.009,"VI167Y":14.02,"AZI165":-0.31,"risk":0},{"date":"2026-02-16 22:05","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.207,"AZI165":-0.31,"risk":0},{"date":"2026-02-17 10:39","TI171":70,"TI170":76,"TI169":76,"VI167X":12.308,"VI167Y":14.439,"AZI165":-0.31,"risk":0},{"date":"2026-02-17 18:58","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.558,"AZI165":-0.31,"risk":0},{"date":"2026-02-17 21:17","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 11:13","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.003,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 14:10","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.02,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 14:26","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.012,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 18:56","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.1,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 20:43","TI171":70,"TI170":76,"TI169":76,"VI167X":11.662,"VI167Y":14.037,"AZI165":-0.31,"risk":0},{"date":"2026-02-18 21:30","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.004,"AZI165":-0.31,"risk":0},{"date":"2026-02-19 11:25","TI171":70,"TI170":76,"TI169":76.77,"VI167X":12,"VI167Y":14.209,"AZI165":-0.31,"risk":0},{"date":"2026-02-20 02:36","TI171":70,"TI170":76,"TI169":76,"VI167X":12,"VI167Y":14.446,"AZI165":-0.31,"risk":0},{"date":"2026-02-21 12:34","TI171":71,"TI170":76,"TI169":77,"VI167X":12.357,"VI167Y":14.716,"AZI165":-0.31,"risk":0},{"date":"2026-02-21 12:40","TI171":71,"TI170":76,"TI169":77,"VI167X":12.091,"VI167Y":14.481,"AZI165":-0.318,"risk":0},{"date":"2026-02-21 15:50","TI171":71,"TI170":76,"TI169":77,"VI167X":12,"VI167Y":14.028,"AZI165":-0.316,"risk":0},{"date":"2026-02-02 11:54","TI171":71,"TI170":70.02,"TI169":71,"VI167X":13.04,"VI167Y":18.423,"AZI165":-0.141,"risk":1},{"date":"2026-02-04 10:44","TI171":72,"TI170":71,"TI169":72,"VI167X":12,"VI167Y":18.217,"AZI165":-0.16,"risk":1},{"date":"2026-04-09 11:26","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 11:32","TI171":71,"TI170":77.53,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 11:56","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 12:24","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 12:48","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 12:51","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.312,"risk":1},{"date":"2026-04-09 12:52","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.31,"risk":1},{"date":"2026-04-09 13:22","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.32,"risk":1},{"date":"2026-04-09 13:26","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":14,"AZI165":-0.311,"risk":1},{"date":"2026-04-09 15:08","TI171":71,"TI170":78,"TI169":77,"VI167X":12,"VI167Y":13.994,"AZI165":-0.312,"risk":1},{"date":"2026-04-24 11:21","TI171":73,"TI170":71,"TI169":71,"VI167X":12.015,"VI167Y":16.462,"AZI165":-0.188,"risk":1},{"date":"2026-04-25 16:38","TI171":72,"TI170":78,"TI169":79,"VI167X":13,"VI167Y":13.083,"AZI165":-0.35,"risk":1},{"date":"2026-04-25 17:24","TI171":72,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13.002,"AZI165":-0.35,"risk":1},{"date":"2026-04-25 18:54","TI171":71,"TI170":76,"TI169":79,"VI167X":12.076,"VI167Y":12.985,"AZI165":-0.35,"risk":1},{"date":"2026-04-25 23:16","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":12.989,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 00:20","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 00:41","TI171":71,"TI170":77,"TI169":79,"VI167X":12.628,"VI167Y":13.026,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 02:24","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13.015,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 02:36","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 02:47","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13.374,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 02:59","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 03:16","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 03:39","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13.003,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 04:45","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 05:38","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 06:44","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 07:23","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 07:37","TI171":71,"TI170":77,"TI169":79,"VI167X":12.776,"VI167Y":13.42,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 07:44","TI171":71,"TI170":77,"TI169":79,"VI167X":12.759,"VI167Y":13.483,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 07:57","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 08:12","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13.008,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 08:31","TI171":71,"TI170":77,"TI169":79,"VI167X":12.712,"VI167Y":13.004,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 09:29","TI171":71,"TI170":77,"TI169":79,"VI167X":12.56,"VI167Y":13.268,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 09:51","TI171":71,"TI170":77,"TI169":79,"VI167X":12.743,"VI167Y":13.008,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 10:27","TI171":71,"TI170":77,"TI169":79,"VI167X":12.989,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 11:35","TI171":71,"TI170":77,"TI169":79,"VI167X":12.98,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 12:08","TI171":71,"TI170":77,"TI169":79,"VI167X":12.991,"VI167Y":12.636,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 12:48","TI171":71,"TI170":77,"TI169":79,"VI167X":12.504,"VI167Y":13.004,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 13:08","TI171":71,"TI170":77,"TI169":79,"VI167X":12.992,"VI167Y":12.647,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 13:32","TI171":71,"TI170":77,"TI169":79,"VI167X":12.366,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 14:13","TI171":71,"TI170":77,"TI169":79,"VI167X":13,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 14:40","TI171":71,"TI170":77,"TI169":79,"VI167X":12.928,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 14:52","TI171":71,"TI170":77,"TI169":79,"VI167X":12.804,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 15:08","TI171":71,"TI170":77,"TI169":79,"VI167X":12.56,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-04-26 15:20","TI171":71,"TI170":77,"TI169":79,"VI167X":12.697,"VI167Y":13,"AZI165":-0.35,"risk":1},{"date":"2026-02-01 12:49","TI171":40,"TI170":39,"TI169":39,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-01 12:55","TI171":39,"TI170":40,"TI169":39,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-02 00:35","TI171":39,"TI170":39,"TI169":39,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-02 00:54","TI171":7.73,"TI170":8.36,"TI169":7.73,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-02-02 01:16","TI171":36,"TI170":39,"TI169":35,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-02-02 02:07","TI171":38,"TI170":37,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.05,"risk":2},{"date":"2026-02-02 02:18","TI171":38,"TI170":37,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.05,"risk":2},{"date":"2026-02-02 02:49","TI171":37,"TI170":36,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.06,"risk":2},{"date":"2026-02-02 03:30","TI171":36,"TI170":35,"TI169":35,"VI167X":1,"VI167Y":1,"AZI165":0.06,"risk":2},{"date":"2026-02-02 04:26","TI171":33,"TI170":32,"TI169":32,"VI167X":1,"VI167Y":1,"AZI165":0.04,"risk":2},{"date":"2026-02-03 04:36","TI171":40,"TI170":37,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.06,"risk":2},{"date":"2026-02-03 05:21","TI171":39,"TI170":36,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.06,"risk":2},{"date":"2026-02-03 05:35","TI171":39,"TI170":36,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.06,"risk":2},{"date":"2026-02-03 06:57","TI171":35,"TI170":33,"TI169":32,"VI167X":1,"VI167Y":1,"AZI165":0.05,"risk":2},{"date":"2026-02-03 07:13","TI171":32,"TI170":31,"TI169":31,"VI167X":1,"VI167Y":1,"AZI165":0.04,"risk":2},{"date":"2026-02-03 07:47","TI171":32,"TI170":32,"TI169":32,"VI167X":1,"VI167Y":1,"AZI165":0.04,"risk":2},{"date":"2026-02-03 07:54","TI171":32,"TI170":32,"TI169":32,"VI167X":1,"VI167Y":1,"AZI165":0.04,"risk":2},{"date":"2026-02-03 08:16","TI171":30,"TI170":31,"TI169":30,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-03 09:51","TI171":29,"TI170":30,"TI169":29,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-03 09:54","TI171":29,"TI170":30,"TI169":29,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-02-03 12:20","TI171":29,"TI170":30,"TI169":29,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-02-23 11:28","TI171":45,"TI170":44.01,"TI169":44,"VI167X":6.002,"VI167Y":6,"AZI165":0.087,"risk":2},{"date":"2026-02-23 11:44","TI171":41,"TI170":40,"TI169":40,"VI167X":1,"VI167Y":1,"AZI165":-0.01,"risk":2},{"date":"2026-02-23 11:59","TI171":41,"TI170":42,"TI169":41,"VI167X":1,"VI167Y":1,"AZI165":-0.01,"risk":2},{"date":"2026-04-07 15:11","TI171":41,"TI170":40,"TI169":40,"VI167X":1,"VI167Y":1,"AZI165":0.01,"risk":2},{"date":"2026-04-07 15:49","TI171":40,"TI170":42,"TI169":39,"VI167X":1,"VI167Y":1,"AZI165":0.01,"risk":2},{"date":"2026-04-07 18:29","TI171":37,"TI170":36,"TI169":36,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-04-07 20:45","TI171":36,"TI170":34,"TI169":34,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-04-07 21:28","TI171":33,"TI170":33,"TI169":33,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-04-07 21:32","TI171":33,"TI170":33,"TI169":33,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-04-07 21:50","TI171":33,"TI170":33,"TI169":32.51,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-04-08 06:01","TI171":40,"TI170":39,"TI169":38,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-04-08 09:51","TI171":37,"TI170":35,"TI169":35,"VI167X":1,"VI167Y":1,"AZI165":0.04,"risk":2},{"date":"2026-04-08 11:17","TI171":33,"TI170":33,"TI169":33,"VI167X":1,"VI167Y":1,"AZI165":0.03,"risk":2},{"date":"2026-04-08 12:10","TI171":33,"TI170":33,"TI169":33,"VI167X":1,"VI167Y":1,"AZI165":0.02,"risk":2},{"date":"2026-04-22 08:59","TI171":39,"TI170":41,"TI169":38,"VI167X":1,"VI167Y":1,"AZI165":-0.01,"risk":2},
+{"date":"2026-05-01 08:00","TI171":76,"TI170":80,"TI169":80,"VI167X":20,"VI167Y":22,"AZI165":-0.10,"risk":2},
+{"date":"2026-05-01 08:15","TI171":77,"TI170":80,"TI169":81,"VI167X":21,"VI167Y":23,"AZI165":-0.10,"risk":2},
+{"date":"2026-05-01 08:30","TI171":78,"TI170":81,"TI169":81,"VI167X":22,"VI167Y":24,"AZI165":-0.11,"risk":2},
+{"date":"2026-05-01 08:45","TI171":75,"TI170":79,"TI169":80,"VI167X":19,"VI167Y":21,"AZI165":-0.11,"risk":2},
+{"date":"2026-05-01 09:00","TI171":79,"TI170":82,"TI169":82,"VI167X":24,"VI167Y":26,"AZI165":-0.12,"risk":2},
+{"date":"2026-05-01 09:15","TI171":73,"TI170":79,"TI169":80,"VI167X":18,"VI167Y":20,"AZI165":-0.12,"risk":2},
+{"date":"2026-05-01 09:30","TI171":74,"TI170":79,"TI169":80,"VI167X":20,"VI167Y":25,"AZI165":-0.13,"risk":2},
+{"date":"2026-05-02 10:00","TI171":76,"TI170":80,"TI169":81,"VI167X":25,"VI167Y":28,"AZI165":-0.13,"risk":2},
+{"date":"2026-05-02 10:15","TI171":77,"TI170":81,"TI169":82,"VI167X":23,"VI167Y":27,"AZI165":-0.14,"risk":2},
+{"date":"2026-05-02 10:30","TI171":78,"TI170":80,"TI169":80,"VI167X":22,"VI167Y":26,"AZI165":-0.14,"risk":2}];
+ 
+// ──────────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────────
+let model = null;
+let modelTrained = false;
+let realtimeInterval = null;
+let dataIdx = 0;
+let alertCount = 0;
+let chartData = { labels: [], ti171: [], ti170: [], vi167x: [], risks: [] };
+let mainChart = null;
+ 
+const RISK_NAMES = ['FAIBLE', 'MOYEN', 'CRITIQUE'];
+const RISK_COLORS = ['#00aa00', '#ff8800', '#cc0000'];
+const EXAMPLES = [
+  {TI171:70.0, TI170:76.0, TI169:77.0, VI167X:12.0, VI167Y:14.2,  AZI165:-0.31, expect:0},
+  {TI171:72.0, TI170:78.0, TI169:79.0, VI167X:13.0, VI167Y:18.5,  AZI165:-0.30, expect:1},
+  {TI171:78.0, TI170:80.0, TI169:81.0, VI167X:22.0, VI167Y:25.0,  AZI165:-0.12, expect:2}
+];
+ 
+// ──────────────────────────────────────────────
+//  SIMPLE DECISION TREE (ML model in JS)
+// ──────────────────────────────────────────────
+function extractFeatures(d) {
+  return [
+    d.TI171, d.TI170, d.TI169, d.VI167X, d.VI167Y, d.AZI165,
+    (d.TI171 + d.TI170 + d.TI169) / 3,
+    Math.max(d.VI167X, d.VI167Y),
+    Math.abs(d.AZI165),
+    d.TI170 - d.TI169
+  ];
+}
+ 
+class DecisionTree {
+  constructor(maxDepth=8, minSamples=2) {
+    this.maxDepth = maxDepth;
+    this.minSamples = minSamples;
+    this.tree = null;
+  }
+  gini(groups, classes) {
+    const n = groups.reduce((s,g)=>s+g.length,0);
+    let impurity = 0;
+    for (const g of groups) {
+      const size = g.length;
+      if (size===0) continue;
+      let score = 0;
+      for (const c of classes) {
+        const p = g.filter(r=>r.label===c).length / size;
+        score += p*p;
+      }
+      impurity += (1-score) * (size/n);
+    }
+    return impurity;
+  }
+  split(idx, thresh, rows) {
+    return [rows.filter(r=>r.feat[idx]<=thresh), rows.filter(r=>r.feat[idx]>thresh)];
+  }
+  bestSplit(rows) {
+    const classes = [...new Set(rows.map(r=>r.label))];
+    let best = {gini:Infinity, idx:0, thresh:0, groups:null};
+    const nFeats = rows[0].feat.length;
+    for (let fi=0; fi<nFeats; fi++) {
+      const vals = [...new Set(rows.map(r=>r.feat[fi]))].sort((a,b)=>a-b);
+      for (let vi=0; vi<vals.length-1; vi++) {
+        const thresh = (vals[vi]+vals[vi+1])/2;
+        const [l,r] = this.split(fi, thresh, rows);
+        const g = this.gini([l,r], classes);
+        if (g < best.gini) best = {gini:g, idx:fi, thresh, groups:[l,r]};
+      }
+    }
+    return best;
+  }
+  majority(rows) {
+    const cnt = {};
+    for (const r of rows) cnt[r.label] = (cnt[r.label]||0)+1;
+    return Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
+  }
+  buildNode(rows, depth) {
+    if (depth>=this.maxDepth || rows.length<=this.minSamples) return {leaf:true, val:+this.majority(rows)};
+    const sp = this.bestSplit(rows);
+    if (!sp.groups || sp.gini===0) return {leaf:true, val:+this.majority(rows)};
+    const [l,r] = sp.groups;
+    if (l.length===0||r.length===0) return {leaf:true, val:+this.majority(rows)};
+    return {
+      leaf:false, fi:sp.idx, thresh:sp.thresh,
+      left:this.buildNode(l, depth+1),
+      right:this.buildNode(r, depth+1)
+    };
+  }
+  fit(X, y) {
+    const rows = X.map((feat,i)=>({feat, label:y[i]}));
+    this.tree = this.buildNode(rows, 0);
+  }
+  predictOne(feat, node) {
+    if (node.leaf) return node.val;
+    return feat[node.fi]<=node.thresh ? this.predictOne(feat,node.left) : this.predictOne(feat,node.right);
+  }
+  predict(X) { return X.map(f=>this.predictOne(f, this.tree)); }
+}
+ 
+class RandomForest {
+  constructor(nTrees=15, maxDepth=8) {
+    this.nTrees = nTrees;
+    this.maxDepth = maxDepth;
+    this.trees = [];
+    this.featureImportance = new Array(10).fill(0);
+  }
+  fit(X, y) {
+    this.trees = [];
+    for (let t=0; t<this.nTrees; t++) {
+      const n = X.length;
+      const idxs = Array.from({length:n}, ()=>Math.floor(Math.random()*n));
+      const bX = idxs.map(i=>X[i]);
+      const by = idxs.map(i=>y[i]);
+      const tree = new DecisionTree(this.maxDepth);
+      tree.fit(bX, by);
+      this.trees.push(tree);
+    }
+    this.computeImportance(X, y);
+  }
+  computeImportance(X, y) {
+    const baseline = this.accuracy(X, y);
+    for (let fi=0; fi<10; fi++) {
+      const Xp = X.map(row => row.map((v,i)=>i===fi ? row[i]+Math.random()*0.5 : v));
+      const perm = this.accuracy(Xp, y);
+      this.featureImportance[fi] = Math.max(0, baseline - perm);
+    }
+    const sum = this.featureImportance.reduce((a,b)=>a+b,0)||1;
+    this.featureImportance = this.featureImportance.map(v=>v/sum);
+  }
+  accuracy(X, y) {
+    const preds = this.predict(X);
+    return preds.filter((p,i)=>p===y[i]).length / y.length;
+  }
+  predictOne(feat) {
+    const votes = {};
+    for (const t of this.trees) {
+      const v = t.predictOne(feat, t.tree);
+      votes[v] = (votes[v]||0)+1;
+    }
+    return Object.entries(votes).sort((a,b)=>b[1]-a[1])[0];
+  }
+  predict(X) { return X.map(f=>+this.predictOne(f)[0]); }
+  predictProba(feat) {
+    const votes = {0:0,1:0,2:0};
+    for (const t of this.trees) { const v=t.predictOne(feat,t.tree); votes[v]=(votes[v]||0)+1; }
+    const total = this.nTrees;
+    return [votes[0]/total, votes[1]/total, votes[2]/total];
+  }
+}
+ 
+// ──────────────────────────────────────────────
+//  UI HELPERS
+// ──────────────────────────────────────────────
+function log(msg, type='info') {
+  // console removed
+}
+function setStatus(msg) { document.getElementById('statusMain').textContent = msg; }
+function updateTime() {
+  document.getElementById('statusTime').textContent = new Date().toLocaleString('fr-FR');
+}
+setInterval(updateTime, 1000); updateTime();
+ 
+function showTab(n) {
+  for (let i=1;i<=2;i++) {
+    document.getElementById('tab'+i).classList.toggle('active', i===n);
+    document.getElementById('tabContent'+i).classList.toggle('active', i===n);
+  }
+}
+ 
+function closeAlert() { document.getElementById('alertOverlay').classList.remove('show'); }
+ 
+// ──────────────────────────────────────────────
+//  TRAIN MODEL
+// ──────────────────────────────────────────────
+async function trainModel() {
+  document.getElementById('btnTrain').disabled = true;
+  setStatus('Entraînement en cours...');
+ 
+  const X = TRAINING_DATA.map(d => extractFeatures(d));
+  const y = TRAINING_DATA.map(d => d.risk);
+ 
+  // Shuffle + split 80/20
+  const indices = [...X.keys()].sort(()=>Math.random()-0.5);
+  const split = Math.floor(indices.length * 0.8);
+  const trainIdx = indices.slice(0, split);
+  const testIdx = indices.slice(split);
+ 
+  const Xtrain = trainIdx.map(i=>X[i]), ytrain = trainIdx.map(i=>y[i]);
+  const Xtest = testIdx.map(i=>X[i]), ytest = testIdx.map(i=>y[i]);
+ 
+  await new Promise(r => setTimeout(r, 200));
+ 
+  model = new RandomForest(15, 8);
+  model.fit(Xtrain, ytrain);
+ 
+  const accTrain = (model.accuracy(Xtrain, ytrain)*100).toFixed(1);
+  const accTest  = (model.accuracy(Xtest, ytest)*100).toFixed(1);
+ 
+  modelTrained = true;
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnTest').disabled = false;
+  document.getElementById('btnPredict').disabled = false;
+  document.getElementById('btnTrain').disabled = false;
+ 
+  // Build classification report
+  buildClassReport(Xtest, ytest);
+  drawFeatureImportance();
+  drawDistribution();
+  setStatus(`Modèle entraîné — Précision Test: ${accTest}%`);
+}
+ 
+function buildClassReport(Xtest, ytest) {
+  const preds = model.predict(Xtest);
+  const classes = [0,1,2];
+  const names = ['FAIBLE','MOYEN','CRITIQUE'];
+  let confMatrix = [[0,0,0],[0,0,0],[0,0,0]];
+  for (let i=0;i<ytest.length;i++) confMatrix[ytest[i]][preds[i]]++;
+  const crBody = document.getElementById('classReportBody');
+  if (crBody) {
+    let html = '';
+    for (const c of classes) {
+      const tp = confMatrix[c][c];
+      const fp = classes.reduce((s,r)=>r!==c?s+confMatrix[r][c]:s, 0);
+      const fn = classes.reduce((s,r)=>r!==c?s+confMatrix[c][r]:s, 0);
+      const prec = tp/(tp+fp)||0, rec = tp/(tp+fn)||0;
+      const f1 = 2*prec*rec/(prec+rec)||0;
+      const sup = ytest.filter(v=>v===c).length;
+      html += `<tr><td><span class="badge-${['faible','moyen','critique'][c]}">${names[c]}</span></td><td>${(prec*100).toFixed(1)}%</td><td>${(rec*100).toFixed(1)}%</td><td>${(f1*100).toFixed(1)}%</td><td>${sup}</td></tr>`;
+    }
+    crBody.innerHTML = html;
+  }
+  if (document.getElementById('confMatrix')) drawConfMatrix(confMatrix);
+}
+ 
+function drawConfMatrix(matrix) {
+  const canvas = document.getElementById('confMatrix');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,200,160);
+  const labels = ['FAIBLE','MOYEN','CRIT.'];
+  const colors = ['#00aa00','#ff8800','#cc0000'];
+  const cell = 44; const off = 40;
+  ctx.font = '10px Arial'; ctx.textAlign='center';
+  for (let i=0;i<3;i++) {
+    ctx.fillStyle = colors[i];
+    ctx.fillText(labels[i], off + i*cell + cell/2, 14);
+    ctx.fillText(labels[i], 28, off + i*cell + cell/2 + 4);
+  }
+  ctx.fillStyle='#000'; ctx.font='bold 9px Arial';
+  ctx.fillText('Prédit →', 110, 8);
+  ctx.save(); ctx.translate(8,100); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Réel ↓', 0,0); ctx.restore();
+  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
+    const v=matrix[r][c]; const max=Math.max(...matrix.flat())||1;
+    const alpha=v/max;
+    ctx.fillStyle=r===c?`rgba(0,100,0,${0.2+alpha*0.7})`:`rgba(200,0,0,${alpha*0.5})`;
+    ctx.fillRect(off+c*cell, off+r*cell, cell-2, cell-2);
+    ctx.fillStyle=v>0?'#000':'#999'; ctx.font='bold 13px Arial';
+    ctx.fillText(v, off+c*cell+cell/2-1, off+r*cell+cell/2+4);
+  }
+}
+ 
+function drawFeatureImportance() {
+  if (!model) return;
+  const canvas = document.getElementById('featChart');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,280,140);
+  const names = ['TI171','TI170','TI169','VI167X','VI167Y','AZI165','Tmoy','Vmax','|AZI|','ΔT'];
+  const imp = model.featureImportance;
+  const max = Math.max(...imp)||0.01;
+  const bh = 14; const off = 60;
+  ctx.font = '10px Arial'; ctx.textAlign='right'; ctx.fillStyle='#000';
+  for (let i=0;i<10;i++) {
+    const y=8+i*bh;
+    ctx.fillStyle='#000'; ctx.textAlign='right';
+    ctx.fillText(names[i], off-3, y+bh-3);
+    const bw=(imp[i]/max)*(280-off-10);
+    ctx.fillStyle='#316ac5';
+    ctx.fillRect(off, y+1, bw, bh-2);
+    ctx.fillStyle='#000'; ctx.textAlign='left';
+    ctx.fillText((imp[i]*100).toFixed(1)+'%', off+bw+2, y+bh-3);
+  }
+}
+ 
+function drawDistribution() {
+  const canvas = document.getElementById('distChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,280,140);
+  const counts = [0,1,2].map(r=>TRAINING_DATA.filter(d=>d.risk===r).length);
+  const total = counts.reduce((a,b)=>a+b);
+  const labels = ['FAIBLE','MOYEN','CRITIQUE'];
+  const colors = ['#00aa00','#ff8800','#cc0000'];
+  const bw=60, gap=20, offX=30, offY=110;
+  ctx.font='10px Arial'; ctx.textAlign='center';
+  for (let i=0;i<3;i++) {
+    const bh = (counts[i]/total)*90;
+    ctx.fillStyle=colors[i];
+    ctx.fillRect(offX+i*(bw+gap), offY-bh, bw, bh);
+    ctx.fillStyle='#000';
+    ctx.fillText(labels[i], offX+i*(bw+gap)+bw/2, offY+12);
+    ctx.fillText(counts[i], offX+i*(bw+gap)+bw/2, offY-bh-3);
+  }
+}
+ 
+// ──────────────────────────────────────────────
+//  REALTIME MONITORING
+// ──────────────────────────────────────────────
+function initChart() { /* canvas removed */ }
+function updateChart() { /* canvas removed */ }
+ 
+function updateSensorCard(id, val, displayVal, isWarn, isCrit) {
+  const card = document.getElementById('card_' + id);
+  const dot  = document.getElementById('dot_' + id);
+  card.className = 'scard ' + (isCrit ? 'crit' : isWarn ? 'warn' : '');
+  dot.className  = 'scard-dot ' + (isCrit ? 'crit' : isWarn ? 'warn' : '');
+  document.getElementById('v_' + id).textContent = displayVal;
+}
+ 
+function processReading(d) {
+  if (!modelTrained) return;
+  const feat = extractFeatures(d);
+  const proba = model.predictProba(feat);
+  const pred = proba.indexOf(Math.max(...proba));
+  const t = performance.now();
+ 
+  // Update sensor cards
+  updateSensorCard('ti171',  d.TI171,  d.TI171.toFixed(1),  false,            d.TI171<60||d.TI171>73);
+  updateSensorCard('ti170',  d.TI170,  d.TI170.toFixed(1),  false,            d.TI170<65||d.TI170>78);
+  updateSensorCard('ti169',  d.TI169,  d.TI169.toFixed(1),  false,            d.TI169<65||d.TI169>80);
+  updateSensorCard('vi167x', d.VI167X, d.VI167X.toFixed(4), d.VI167X>15,      d.VI167X>20||d.VI167X<5);
+  updateSensorCard('vi167y', d.VI167Y, d.VI167Y.toFixed(4), d.VI167Y>16,      d.VI167Y>20||d.VI167Y<5);
+  updateSensorCard('azi165', d.AZI165, d.AZI165.toFixed(4), Math.abs(d.AZI165)>0.1, Math.abs(d.AZI165)>0.3);
+ 
+  // Risk banner
+  const riskColors  = ['#00aa00','#ff8800','#cc0000'];
+  const riskBorderColors = ['#00aa00','#ff8800','#cc0000'];
+  const riskBg      = ['#e8f4e8','#fff4e0','#fff0f0'];
+  const banner = document.getElementById('riskBanner');
+  banner.style.borderLeftColor = riskBorderColors[pred];
+  banner.style.background = riskBg[pred];
+  document.getElementById('riskDot').style.background = riskColors[pred];
+  document.getElementById('riskDot').style.boxShadow = `0 0 0 3px ${riskColors[pred]}33`;
+ 
+  const riskDisp = document.getElementById('riskDisplay');
+  riskDisp.textContent = RISK_NAMES[pred];
+  riskDisp.style.color = riskColors[pred];
+ 
+  const descMap = [
+    'Fonctionnement normal — tous les capteurs dans les plages acceptables.',
+    'Anomalie détectée — surveillance renforcée recommandée.',
+    '⚠ ARRÊT IMMÉDIAT REQUIS — défaillance imminente détectée!'
+  ];
+  document.getElementById('riskDesc').textContent = descMap[pred];
+ 
+  document.getElementById('riskProba').style.display = 'flex';
+  document.getElementById('probaF').style.width = (proba[0]*100)+'%';
+  document.getElementById('probaFv').textContent = (proba[0]*100).toFixed(0)+'%';
+  document.getElementById('probaM').style.width = (proba[1]*100)+'%';
+  document.getElementById('probaMv').textContent = (proba[1]*100).toFixed(0)+'%';
+  document.getElementById('probaC').style.width = (proba[2]*100)+'%';
+  document.getElementById('probaCv').textContent = (proba[2]*100).toFixed(0)+'%';
+ 
+  // Chart data (still tracked for stats tab)
+  const label = d.date || new Date().toLocaleTimeString('fr-FR');
+  chartData.labels.push(label);
+  chartData.ti171.push(d.TI171);
+  chartData.ti170.push(d.TI170);
+  chartData.vi167x.push(d.VI167X);
+  chartData.risks.push(pred);
+  if (chartData.labels.length > 60) {
+    chartData.labels.shift(); chartData.ti171.shift();
+    chartData.ti170.shift(); chartData.vi167x.shift(); chartData.risks.shift();
+  }
+ 
+  if (pred === 2) {
+    triggerCriticalAlert(d, proba, t);
+  }
+ 
+  setStatus(`Surveillance active | Dernier: ${label} | Risque: ${RISK_NAMES[pred]}`);
+}
+ 
+// ──────────────────────────────────────────────
+//  ALERTS
+// ──────────────────────────────────────────────
+let lastAlertTime = 0;
+ 
+function triggerCriticalAlert(d, proba, detectTime) {
+  const now = Date.now();
+  if (now - lastAlertTime < 10000) return; // debounce 10s
+  lastAlertTime = now;
+ 
+  alertCount++;
+  document.getElementById('statusAlerts').textContent = 'Alertes : ' + alertCount;
+ 
+  const detMs = (performance.now() - detectTime).toFixed(0);
+  const ts = new Date().toLocaleString('fr-FR');
+ 
+  // Add to history
+  const tbody = document.getElementById('alertHistBody');
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+  const tr = tbody.insertRow(0);
+  tr.innerHTML = `<td>${ts}</td><td><span class="badge-critique">CRITIQUE</span></td>
+    <td>${d.TI171.toFixed(1)}°C</td><td>${d.TI170.toFixed(1)}°C</td><td>${d.TI169.toFixed(1)}°C</td>
+    <td>${d.VI167X.toFixed(2)}</td><td>${d.VI167Y.toFixed(2)}</td><td>${d.AZI165.toFixed(3)}</td>`;
+ 
+  // Show alert popup
+  document.getElementById('alertTime').textContent = `Détecté à ${ts} (${detMs}ms)`;
+  document.getElementById('alertBody').innerHTML = `
+    <b>Pompe H₂SO₄ — OCP El Jadida — Ligne 401</b><br>
+    <b>Confiance CRITIQUE : ${(proba[2]*100).toFixed(0)}%</b><br><br>
+    <table style="font-size:11px; border-collapse:collapse; width:100%">
+      <tr style="background:#ffeeee"><td style="padding:2px 6px;border:1px solid #ccc"><b>Capteur</b></td><td style="padding:2px 6px;border:1px solid #ccc"><b>Valeur</b></td><td style="padding:2px 6px;border:1px solid #ccc"><b>Seuil Normal</b></td><td style="padding:2px 6px;border:1px solid #ccc"><b>État</b></td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">TI-171</td><td style="padding:2px 6px;border:1px solid #ccc">${d.TI171.toFixed(1)}°C</td><td style="padding:2px 6px;border:1px solid #ccc">68–72°C</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.TI171<60||d.TI171>73?'#cc0000':'#006600'}">${d.TI171<60||d.TI171>73?'⚠ ANORMAL':'✓ OK'}</td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">TI-170</td><td style="padding:2px 6px;border:1px solid #ccc">${d.TI170.toFixed(1)}°C</td><td style="padding:2px 6px;border:1px solid #ccc">72–77°C</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.TI170<65||d.TI170>78?'#cc0000':'#006600'}">${d.TI170<65||d.TI170>78?'⚠ ANORMAL':'✓ OK'}</td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">TI-169</td><td style="padding:2px 6px;border:1px solid #ccc">${d.TI169.toFixed(1)}°C</td><td style="padding:2px 6px;border:1px solid #ccc">72–78°C</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.TI169<65||d.TI169>80?'#cc0000':'#006600'}">${d.TI169<65||d.TI169>80?'⚠ ANORMAL':'✓ OK'}</td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">VI-167X</td><td style="padding:2px 6px;border:1px solid #ccc">${d.VI167X.toFixed(2)} mm/s</td><td style="padding:2px 6px;border:1px solid #ccc">10–16 mm/s</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.VI167X>20?'#cc0000':d.VI167X<5?'#cc0000':'#006600'}">${d.VI167X>20||d.VI167X<5?'⚠ ANORMAL':'✓ OK'}</td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">VI-167Y</td><td style="padding:2px 6px;border:1px solid #ccc">${d.VI167Y.toFixed(2)} mm/s</td><td style="padding:2px 6px;border:1px solid #ccc">12–18 mm/s</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.VI167Y>22?'#cc0000':d.VI167Y<5?'#cc0000':'#006600'}">${d.VI167Y>22||d.VI167Y<5?'⚠ ANORMAL':'✓ OK'}</td></tr>
+      <tr><td style="padding:2px 6px;border:1px solid #ccc">AZI-165</td><td style="padding:2px 6px;border:1px solid #ccc">${d.AZI165.toFixed(3)}</td><td style="padding:2px 6px;border:1px solid #ccc">-0.36 à -0.15 (H=-0.15/HH=-0.10)</td><td style="padding:2px 6px;border:1px solid #ccc;color:${d.AZI165>-0.10?'#cc0000':d.AZI165>-0.15?'#ff8800':'#006600'}">${d.AZI165>-0.10?'⚠ HH':d.AZI165>-0.15?'⚠ H':'✓ OK'}</td></tr>
+    </table>
+  `;
+ 
+  document.getElementById('alertOverlay').classList.add('show');
+  // ── Envoi email automatique ───────────────────
+  sendCriticalEmailAlert(d, proba);
+}
+ 
+// ──────────────────────────────────────────────
+//  START / STOP REALTIME
+// ──────────────────────────────────────────────
+function startRealtime() {
+  if (realtimeInterval) return;
+  log('Démarrage surveillance temps réel...', 'info');
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  chartData = { labels:[], ti171:[], ti170:[], vi167x:[], risks:[] };
+  dataIdx = 0;
+ 
+  realtimeInterval = setInterval(() => {
+    const d = TRAINING_DATA[dataIdx % TRAINING_DATA.length];
+    dataIdx++;
+    processReading(d);
+  }, 1200);
+}
+ 
+function stopRealtime() {
+  clearInterval(realtimeInterval);
+  realtimeInterval = null;
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+  log('Surveillance arrêtée.', 'warn');
+  setStatus('Surveillance arrêtée');
+}
+ 
+// ──────────────────────────────────────────────
+//  TEST / MANUAL PREDICT
+// ──────────────────────────────────────────────
+function loadExample(idx) {
+  const e = EXAMPLES[idx];
+  document.getElementById('inp_ti171').value = e.TI171;
+  document.getElementById('inp_ti170').value = e.TI170;
+  document.getElementById('inp_ti169').value = e.TI169;
+  document.getElementById('inp_vi167x').value = e.VI167X;
+  document.getElementById('inp_vi167y').value = e.VI167Y;
+  document.getElementById('inp_azi165').value = e.AZI165;
+  showTab(2);
+}
+ 
+function predictManual() {
+  if (!modelTrained) return;
+  const t0 = performance.now();
+  const d = {
+    TI171: +document.getElementById('inp_ti171').value,
+    TI170: +document.getElementById('inp_ti170').value,
+    TI169: +document.getElementById('inp_ti169').value,
+    VI167X: +document.getElementById('inp_vi167x').value,
+    VI167Y: +document.getElementById('inp_vi167y').value,
+    AZI165: +document.getElementById('inp_azi165').value
+  };
+  const feat = extractFeatures(d);
+  const proba = model.predictProba(feat);
+  const pred = proba.indexOf(Math.max(...proba));
+  const ms = (performance.now()-t0).toFixed(1);
+ 
+  const el = document.getElementById('predResult');
+  el.textContent = `${RISK_NAMES[pred]} (${(proba[pred]*100).toFixed(0)}%)`;
+  el.style.color = RISK_COLORS[pred];
+  el.style.borderColor = RISK_COLORS[pred];
+  document.getElementById('predTime').textContent = `Temps: ${ms}ms`;
+ 
+  // Add to table
+  const tbody = document.getElementById('testTableBody');
+  const n = tbody.rows.length + 1;
+  const labels = ['faible','moyen','critique'];
+  const tr = tbody.insertRow(0);
+  tr.innerHTML = `<td>${n}</td><td>${d.TI171}</td><td>${d.TI170}</td><td>${d.TI169}</td><td>${d.VI167X}</td><td>${d.VI167Y}</td><td>${d.AZI165}</td>
+    <td><span class="badge-${labels[pred]}">${RISK_NAMES[pred]}</span></td>
+    <td>—</td><td>—</td>`;
+ 
+  if (pred===2) triggerCriticalAlert(d, proba, t0);
+  log(`Prédiction manuelle: ${RISK_NAMES[pred]} (${(proba[pred]*100).toFixed(0)}%) en ${ms}ms`, pred===2?'err':pred===1?'warn':'ok');
+}
+ 
+function runTest() {
+  if (!modelTrained) return;
+  showTab(2);
+  const tbody = document.getElementById('testTableBody');
+  tbody.innerHTML = '';
+  const labels = ['faible','moyen','critique'];
+  let correct = 0;
+  const testSamples = [
+    {TI171:70.0, TI170:76.0, TI169:77.0, VI167X:12.0, VI167Y:14.2, AZI165:-0.31, expect:0},
+    {TI171:71.0, TI170:76.0, TI169:77.0, VI167X:12.5, VI167Y:14.8, AZI165:-0.31, expect:0},
+    {TI171:69.0, TI170:75.0, TI169:76.0, VI167X:13.0, VI167Y:15.1, AZI165:-0.29, expect:0},
+    {TI171:72.0, TI170:78.0, TI169:79.0, VI167X:13.0, VI167Y:18.5, AZI165:-0.14, expect:1},
+    {TI171:71.0, TI170:78.0, TI169:77.0, VI167X:12.0, VI167Y:14.0, AZI165:-0.31, expect:1},
+    {TI171:72.0, TI170:71.0, TI169:72.0, VI167X:12.5, VI167Y:19.0, AZI165:-0.16, expect:1},
+    {TI171:35.0, TI170:34.0, TI169:34.0, VI167X:1.0,  VI167Y:1.0,  AZI165:0.04,  expect:2},
+    {TI171:40.0, TI170:39.0, TI169:38.0, VI167X:1.0,  VI167Y:1.0,  AZI165:0.03,  expect:2},
+    {TI171:29.0, TI170:30.0, TI169:29.0, VI167X:1.0,  VI167Y:1.0,  AZI165:0.02,  expect:2},
+    {TI171:45.0, TI170:44.0, TI169:44.0, VI167X:6.0,  VI167Y:6.0,  AZI165:0.09,  expect:2},
+  ];
+  for (let i=0;i<testSamples.length;i++) {
+    const d = testSamples[i];
+    const feat = extractFeatures(d);
+    const proba = model.predictProba(feat);
+    const pred = proba.indexOf(Math.max(...proba));
+    const ok = pred === d.expect;
+    if (ok) correct++;
+    const tr = tbody.insertRow();
+    tr.innerHTML=`<td>${i+1}</td><td>${d.TI171}</td><td>${d.TI170}</td><td>${d.TI169}</td><td>${d.VI167X}</td><td>${d.VI167Y}</td><td>${d.AZI165}</td>
+      <td><span class="badge-${labels[pred]}">${RISK_NAMES[pred]}</span></td>
+      <td><span class="badge-${labels[d.expect]}">${RISK_NAMES[d.expect]}</span></td>
+      <td style="font-weight:bold;color:${ok?'#006600':'#cc0000'}">${ok?'✓':'✗'}</td>`;
+  }
+  log(`Test sur ${testSamples.length} exemples — ${correct}/${testSamples.length} corrects (${(correct/testSamples.length*100).toFixed(0)}%)`, 'ok');
+}
+ 
+// ──────────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────────
+window.addEventListener('load', () => { trainModel(); });
+ 
+// ──────────────────────────────────────────────
+//  EMAIL CONFIG & ENVOI ALERTE
+// ──────────────────────────────────────────────
+let emailConfig = { from: '', pass: '', to: '' };
+ 
+function openEmailConfig() {
+  document.getElementById('cfg_from').value = emailConfig.from;
+  document.getElementById('cfg_pass').value = emailConfig.pass;
+  document.getElementById('cfg_to').value   = emailConfig.to;
+  document.getElementById('emailTestResult').textContent = '';
+  document.getElementById('emailOverlay').classList.add('show');
+}
+function closeEmailConfig() {
+  document.getElementById('emailOverlay').classList.remove('show');
+}
+function saveEmailConfig() {
+  emailConfig.from = document.getElementById('cfg_from').value.trim();
+  emailConfig.pass = document.getElementById('cfg_pass').value.trim();
+  emailConfig.to   = document.getElementById('cfg_to').value.trim();
+  if (!emailConfig.from || !emailConfig.pass || !emailConfig.to) {
+    document.getElementById('emailTestResult').innerHTML = '<span class="email-status-err">⚠ Remplis tous les champs</span>';
+    return;
+  }
+  const bar = document.getElementById('emailStatusBar');
+  bar.textContent = '✉ Email: ' + emailConfig.to;
+  bar.style.color = '#006600';
+  document.getElementById('emailTestResult').innerHTML = '<span class="email-status-ok">✓ Configuration enregistrée</span>';
+  setTimeout(closeEmailConfig, 1200);
+}
+ 
+async function testEmail() {
+  emailConfig.from = document.getElementById('cfg_from').value.trim();
+  emailConfig.pass = document.getElementById('cfg_pass').value.trim();
+  emailConfig.to   = document.getElementById('cfg_to').value.trim();
+  if (!emailConfig.from || !emailConfig.pass || !emailConfig.to) {
+    document.getElementById('emailTestResult').innerHTML = '<span class="email-status-err">⚠ Remplis tous les champs</span>';
+    return;
+  }
+  document.getElementById('emailTestResult').innerHTML = '<span class="email-status-send">⏳ Envoi en cours...</span>';
+  try {
+    const res = await fetch('/api/send_alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email_from: emailConfig.from,
+        email_pass: emailConfig.pass,
+        email_to:   emailConfig.to,
+        test: true,
+        sensors: { TI171:70, TI170:76, TI169:77, VI167X:12, VI167Y:14, AZI165:-0.31 },
+        proba: [0.9, 0.08, 0.02]
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('emailTestResult').innerHTML = '<span class="email-status-ok">✅ Email test envoyé avec succès !</span>';
+      const bar = document.getElementById('emailStatusBar');
+      bar.textContent = '✉ Email: ' + emailConfig.to;
+      bar.style.color = '#006600';
+    } else {
+      document.getElementById('emailTestResult').innerHTML = '<span class="email-status-err">✗ Erreur: ' + (data.error||'inconnue') + '</span>';
+    }
+  } catch(e) {
+    document.getElementById('emailTestResult').innerHTML = '<span class="email-status-err">✗ Flask non démarré ou erreur réseau</span>';
+  }
+}
+ 
+async function sendCriticalEmailAlert(sensors, proba) {
+  if (!emailConfig.from || !emailConfig.to || !emailConfig.pass) return;
+  try {
+    await fetch('/api/send_alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email_from: emailConfig.from,
+        email_pass: emailConfig.pass,
+        email_to:   emailConfig.to,
+        test: false,
+        sensors: sensors,
+        proba: proba
+      })
+    });
+    console.log('[EMAIL] Alerte critique envoyée à ' + emailConfig.to);
+    setStatus('📧 Alerte email envoyée → ' + emailConfig.to);
+  } catch(e) {
+    console.warn('[EMAIL] Échec envoi:', e);
+  }
+}
+ 
+</script>
+</body>
+</html>
